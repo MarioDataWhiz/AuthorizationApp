@@ -1,10 +1,15 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { AuthProvider } from '@asgardeo/auth-react';
+import { asgardeoConfig } from './config/asgardeoConfig';
+import App from './App';
+import './index.css';
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+const container = document.getElementById('root');
+const root = createRoot(container);
+
+root.render(
+  <AuthProvider config={asgardeoConfig}>
     <App />
-  </StrictMode>,
-)
+  </AuthProvider>
+);

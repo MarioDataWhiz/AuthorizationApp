@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useAuthContext } from '@asgardeo/auth-react';
 import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { format, parseISO, isValid } from 'date-fns';
 
 const EmployeeManagement = () => {
+  const { state, signIn, signOut } = useAuthContext();
   const [employees, setEmployees] = useState([]);
   const [formData, setFormData] = useState({ first_name: '', last_name: '', email: '', birthdate: '', salary: '' });
   const [editId, setEditId] = useState(null);
 
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+    if (state.isAuthenticated) {
+      fetchEmployees();
+    } else {
+      signIn();
+    }
+  }, [state.isAuthenticated]);
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/employees'); // Update the port number here
+      const response = await axios.get('http://localhost:5001/employees');
       setEmployees(response.data);
     } catch (error) {
       console.error('Error fetching employees:', error);
@@ -28,7 +34,7 @@ const EmployeeManagement = () => {
 
   const handleAddEmployee = async () => {
     try {
-      await axios.post('http://localhost:5001/employees', formData); // Update the port number here
+      await axios.post('http://localhost:5001/employees', formData);
       fetchEmployees();
       setFormData({ first_name: '', last_name: '', email: '', birthdate: '', salary: '' });
     } catch (error) {
@@ -40,13 +46,13 @@ const EmployeeManagement = () => {
     setEditId(employee.employee_id);
     setFormData({
       ...employee,
-      birthdate: format(parseISO(employee.birthdate), 'yyyy-MM-dd') // Format the date for the input field
+      birthdate: format(parseISO(employee.birthdate), 'yyyy-MM-dd')
     });
   };
 
   const handleUpdateEmployee = async () => {
     try {
-      await axios.put(`http://localhost:5001/employees/${editId}`, formData); // Update the port number here
+      await axios.put(`http://localhost:5001/employees/${editId}`, formData);
       fetchEmployees();
       setEditId(null);
       setFormData({ first_name: '', last_name: '', email: '', birthdate: '', salary: '' });
@@ -57,16 +63,21 @@ const EmployeeManagement = () => {
 
   const handleDeleteEmployee = async (id) => {
     try {
-      await axios.delete(`http://localhost:5001/employees/${id}`); // Update the port number here
+      await axios.delete(`http://localhost:5001/employees/${id}`);
       fetchEmployees();
     } catch (error) {
       console.error('Error deleting employee:', error);
     }
   };
 
+  if (!state.isAuthenticated) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div style={{ padding: '20px' }}>
       <h1>Employee Management</h1>
+
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -106,7 +117,7 @@ const EmployeeManagement = () => {
           value={formData.first_name}
           onChange={handleInputChange}
           style={{ marginRight: '10px' }}
-          sx={{ backgroundColor: 'white' }} // Set background color to white
+          sx={{ backgroundColor: 'white' }}
         />
         <TextField
           label="Last Name"
@@ -114,7 +125,7 @@ const EmployeeManagement = () => {
           value={formData.last_name}
           onChange={handleInputChange}
           style={{ marginRight: '10px' }}
-          sx={{ backgroundColor: 'white' }} // Set background color to white
+          sx={{ backgroundColor: 'white' }}
         />
         <TextField
           label="Email"
@@ -122,18 +133,18 @@ const EmployeeManagement = () => {
           value={formData.email}
           onChange={handleInputChange}
           style={{ marginRight: '10px' }}
-          sx={{ backgroundColor: 'white' }} // Set background color to white
+          sx={{ backgroundColor: 'white' }}
         />
         <TextField
           label="Birthdate"
           name="birthdate"
-          type="date" // Set the input type to date
+          type="date"
           value={formData.birthdate}
           onChange={handleInputChange}
           style={{ marginRight: '10px' }}
-          sx={{ backgroundColor: 'white' }} // Set background color to white
+          sx={{ backgroundColor: 'white' }}
           InputLabelProps={{
-            shrink: true, // Ensure the label shrinks when the date picker is used
+            shrink: true,
           }}
         />
         <TextField
@@ -142,7 +153,7 @@ const EmployeeManagement = () => {
           value={formData.salary}
           onChange={handleInputChange}
           style={{ marginRight: '10px' }}
-          sx={{ backgroundColor: 'white' }} // Set background color to white
+          sx={{ backgroundColor: 'white' }}
         />
         {editId ? (
           <Button variant="contained" color="primary" onClick={handleUpdateEmployee}>
